@@ -5,7 +5,7 @@ use sdl2::image::LoadTexture;
 use sdl2::rect::Rect;
 
 use std::path::Path;
-use std::time::{Duration};
+use std::time::{Duration, Instant};
 
 const WINDOW_RATIO: f32 = 0.5;
 const BOARD_SIZE: usize = 19;
@@ -65,8 +65,8 @@ pub fn game_loop(theme: &str, restricted_rule: bool, player_mode: [u8; 2]) -> Re
 	let last_played_texture = tc.load_texture(Path::new("img/last_played.png"))?;
 	let textures = [black_texture, white_texture, help_texture, last_played_texture];
 	
-	let mut board = [0; BOARD_CAPACITY];
-	let mut player: usize = 0;
+	let mut board = [0u8; BOARD_CAPACITY];
+	let mut player: u8 = 0;
 	let mut game_status = PLAYING;
 	let mut should_render = false;
 
@@ -77,12 +77,25 @@ pub fn game_loop(theme: &str, restricted_rule: bool, player_mode: [u8; 2]) -> Re
 	{
 		while game_status == PLAYING
 		{
-			for event in event_pump.poll_iter()
+			if player_mode[player as usize] == AI
 			{
+				for i in 0..BOARD_CAPACITY
+				{
+					if board[i] == 0
+					{
+						board[i] = player + 1;
+						should_render = true;
+						break;
+					}
+				}
+			}
+			else
+			{
+				let event = event_pump.wait_event();
 				match event
 				{
 					Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'ui,
-					Event::MouseButtonDown { x, y, mouse_btn: MouseButton::Left, .. } if player_mode[player] == HUMAN =>
+					Event::MouseButtonDown { x, y, mouse_btn: MouseButton::Left, .. } =>
 					{
 						let (x, y) = get_position(x, y);
 						let index = pos_to_index(x, y);
@@ -96,41 +109,37 @@ pub fn game_loop(theme: &str, restricted_rule: bool, player_mode: [u8; 2]) -> Re
 							println!("cannot place stone at ({}, {})", x, y);
 						}
 					},
-					Event::KeyDown { keycode: Some(Keycode::Backspace), .. } if player_mode[player] == HUMAN =>
+					Event::KeyDown { keycode: Some(Keycode::Backspace), .. } =>
 					{
 						// Undo last move
 						println!("delete key pressed");
 					}
 					_ => {},
 				}
-				if player_mode[player] == AI
+			}
+			
+			if should_render == true
+			{
+				canvas.copy(&board_texture, None, None)?;
+				for i in 0..BOARD_CAPACITY
 				{
-					for i in 0..BOARD_CAPACITY
-					{
-						if board[i] == 0
-						{
-							board[i] = player + 1;
-							should_render = true;
-							break;
-						}
-					}
+					if board[i] == 0 { continue }
+					let (x, y) = index_to_pos(i);
+					let rect = get_text_rect(x, y);
+					canvas.copy(&textures[(board[i] - 1) as usize], None, Some(rect))?;
 				}
-				if should_render == true
+				canvas.present();
+				player ^= 1;
+				should_render = false;
+			}
+			if let Some(event) = event_pump.poll_event()
+			{
+				match event
 				{
-					canvas.copy(&board_texture, None, None)?;
-					for i in 0..BOARD_CAPACITY
-					{
-						if board[i] == 0 { continue }
-						let (x, y) = index_to_pos(i);
-						let rect = get_text_rect(x, y);
-						canvas.copy(&textures[(board[i] - 1) as usize], None, Some(rect))?;
-					}
-					canvas.present();
-					player ^= 1;
-					should_render = false;
+					Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'ui,
+					_ => {}
 				}
 			}
-			std::thread::sleep(Duration::from_millis(1));
 		}
 	};
 	Ok(())
