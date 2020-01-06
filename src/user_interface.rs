@@ -11,8 +11,8 @@ const WINDOW_RATIO: f32 = 0.5;
 const BOARD_SIZE: usize = 19;
 const BOARD_CAPACITY: usize = BOARD_SIZE * BOARD_SIZE;
 
-const HUMAN: u8 = 0;
-const AI: u8 = 1;
+const AI: bool = false;
+const HUMAN: bool = true;
 
 const PLAYING: u8 = 0;
 const SEQUENCE_WIN: u8 = 1;
@@ -48,7 +48,7 @@ fn get_text_rect(x: i32, y: i32) -> Rect
 	Rect::new(x, y, w, h)
 }
 
-pub fn game_loop(theme: &str, restricted_rule: bool, player_mode: [u8; 2]) -> Result<(), String>
+pub fn game_loop(theme: &str, rule: &str, player_mode: [bool; 2]) -> Result<(), String>
 {
 	let sdl = sdl2::init()?;
 	let mut event_pump = sdl.event_pump()?;
@@ -79,6 +79,7 @@ pub fn game_loop(theme: &str, restricted_rule: bool, player_mode: [u8; 2]) -> Re
 		{
 			if player_mode[player as usize] == AI
 			{
+				let start = Instant::now();
 				for i in 0..BOARD_CAPACITY
 				{
 					if board[i] == 0
@@ -88,6 +89,9 @@ pub fn game_loop(theme: &str, restricted_rule: bool, player_mode: [u8; 2]) -> Re
 						break;
 					}
 				}
+				
+				let duration = start.elapsed();
+				println!("Engine took: {:.2?}", duration);
 			}
 			else
 			{

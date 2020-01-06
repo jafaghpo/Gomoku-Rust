@@ -1,0 +1,47 @@
+name: Gomoku
+version: "0.1.0"
+author: John Afaghpour <jafaghpo@student.42.com> and Guillaume Gregoire <ggregoir@student.42.fr>
+about: Implementation of the gomoku game with capture and no double free-three rule
+args:
+    - theme:
+        help: Theme of the board
+        short: t
+        long: theme
+        possible_values:
+            - classic
+            - dark
+            - space
+        default_value: classic
+        value_names:
+            - theme
+    - rule:
+        help: Rules of the game
+        short: r
+        long: rule
+        possible_values:
+            - standard
+            - restricted
+            - connect5
+        default_value: restricted
+        value_names:
+            - rule
+    - player1:
+        help: "Mode of player 1 (black pieces)"
+        short: "1"
+        long: player1
+        possible_values:
+            - human
+            - engine
+        default_value: human
+        value_names:
+            - mode
+    - player2:
+        help: "Mode of player 2 (white pieces)"
+        short: "2"
+        long: player2
+        possible_values:
+            - human
+            - engine
+        default_value: human
+        value_names:
+            - mode
