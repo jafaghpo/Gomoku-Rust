@@ -1,3 +1,5 @@
+use crate::board;
+
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
@@ -8,8 +10,6 @@ use std::path::Path;
 use std::time::{Duration, Instant};
 
 const WINDOW_RATIO: f32 = 0.5;
-const BOARD_SIZE: usize = 19;
-const BOARD_CAPACITY: usize = BOARD_SIZE * BOARD_SIZE;
 
 const AI: bool = false;
 const HUMAN: bool = true;
@@ -31,12 +31,12 @@ fn get_position(x: i32, y: i32) -> (i32, i32)
 
 fn pos_to_index(x: i32, y: i32) -> usize
 {
-	y as usize * BOARD_SIZE + x as usize
+	y as usize * board::SIZE + x as usize
 }
 
 fn index_to_pos(index: usize) -> (i32, i32)
 {
-	((index % BOARD_SIZE) as i32, (index / BOARD_SIZE) as i32)
+	((index % board::SIZE) as i32, (index / board::SIZE) as i32)
 }
 
 fn get_text_rect(x: i32, y: i32) -> Rect
@@ -65,7 +65,7 @@ pub fn game_loop(theme: &str, rule: &str, player_mode: [bool; 2]) -> Result<(), 
 	let last_played_texture = tc.load_texture(Path::new("img/last_played.png"))?;
 	let textures = [black_texture, white_texture, help_texture, last_played_texture];
 	
-	let mut board = [0u8; BOARD_CAPACITY];
+	let mut board = [0u8; board::CAPACITY];
 	let mut player: u8 = 0;
 	let mut game_status = PLAYING;
 	let mut should_render = false;
@@ -80,7 +80,7 @@ pub fn game_loop(theme: &str, rule: &str, player_mode: [bool; 2]) -> Result<(), 
 			if player_mode[player as usize] == AI
 			{
 				let start = Instant::now();
-				for i in 0..BOARD_CAPACITY
+				for i in 0..board::CAPACITY
 				{
 					if board[i] == 0
 					{
@@ -125,7 +125,7 @@ pub fn game_loop(theme: &str, rule: &str, player_mode: [bool; 2]) -> Result<(), 
 			if should_render == true
 			{
 				canvas.copy(&board_texture, None, None)?;
-				for i in 0..BOARD_CAPACITY
+				for i in 0..board::CAPACITY
 				{
 					if board[i] == 0 { continue }
 					let (x, y) = index_to_pos(i);

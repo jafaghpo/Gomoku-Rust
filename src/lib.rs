@@ -1,4 +1,7 @@
 pub mod user_interface;
+pub mod board;
+pub mod sequence;
+pub mod moves;
 
 
 #[cfg(test)]
