@@ -2,14 +2,31 @@ use crate::board::Rule;
 
 pub struct Sequence
 {
+	// number of stones in the sequence
 	pub size: u8,
+
+	// direction in which the sequence was built
 	pub direction: i16,
+
+	// size of maximum potential sequence
 	pub space: u8,
+
+	// index of the first and last stone of the sequence
 	pub bound: [i16; 2],
+
+	// player id
 	pub player: u8,
+
+	// index of a hole in the sequence if there is any
 	pub hole_index: Option<u16>,
+
+	// distance between the starting index and the closest stone in the sequence
 	pub dist_start: u8,
+
+	// list of direction where opponent stones flank the sequence
 	pub block: Vec<i16>,
+
+	// list of moves index that counters the growth of the sequence
 	pub counters: Vec<u16>
 }
 
@@ -54,20 +71,11 @@ impl Sequence
 
 	pub fn can_combine(s1: &mut Sequence, s2: &mut Sequence, sep: u8, sep_index: i16) -> bool
 	{
-		// if sequences are close enough & same played id & separator is not an opponent stone
-		// match (s1.space < 2 && s2.space < 2, s1.player == s2.player, sep == s1.player ^ 3)
-		// {
-		// 	(true, true, true)	=> true,
-		// 	(false, true, true)	if =>
-		// 	{
-		// 		s1.space += s2.space;
-		// 		false
-		// 	}
-		// 	()
-		// }
+		s1.space += (sep == 0 || sep == s1.player) as u8 * (s2.dist_start + 1);
+		s2.space += (sep == 0 || sep == s2.player) as u8 * (s1.dist_start + 1);
+		s1.size
 		if s1.player != s2.player
 		{
-			// ajust s1 & s2 spaces
 			return false;
 		}
 		else if sep == s1.player ^ 3
@@ -84,11 +92,7 @@ impl Sequence
 
 			return false;
 		}
-		else if s1.dist_start > 1
-		{
-			return false;
-		}
-		else if s2.dist_start > 1
+		else if s1.dist_start + s2.dist_start + (sep == 0) as u8 > 1
 		{
 			return false;
 		}
